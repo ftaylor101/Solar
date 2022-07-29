@@ -11,3 +11,7 @@ if __name__ == "__main__":
 
     hist_values = np.histogram(data["Consumption (kWh)"], bins=30, range=(0, 3))
 
+    data['day'] = data[' Start'].dt.day
+    data.dropna(inplace=True)
+
+    data.groupby([data[' Start'].dt.month, data[' Start'].dt.day])['Consumption (kWh)'].sum()
