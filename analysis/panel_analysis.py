@@ -59,13 +59,21 @@ def data_analysis(export_df: pd.DataFrame, import_df: pd.DataFrame, generation_d
     st.subheader("Daily comparison")
 
     # sort out daily exports
-    daily_exports = export_df.groupby([export_df[' Start'].dt.year, export_df[' Start'].dt.month, export_df[' Start'].dt.day])['Consumption (kWh)'].sum()
+    daily_exports = export_df.groupby(
+        [export_df[' Start'].dt.year,
+         export_df[' Start'].dt.month,
+         export_df[' Start'].dt.day]
+    )['Consumption (kWh)'].sum()
     temp_df = pd.DataFrame(daily_exports)
     temp_df.rename(columns={"Consumption (kWh)": "Export (kWh)"}, inplace=True)
     daily_exports = temp_df
 
     # sort out daily imports
-    daily_imports = import_df.groupby([export_df[' Start'].dt.year, export_df[' Start'].dt.month, export_df[' Start'].dt.day])['Consumption (kWh)'].sum()
+    daily_imports = import_df.groupby(
+        [export_df[' Start'].dt.year,
+         export_df[' Start'].dt.month,
+         export_df[' Start'].dt.day]
+    )['Consumption (kWh)'].sum()
     temp_df = pd.DataFrame(daily_imports)
     temp_df.rename(columns={"Consumption (kWh)": "Import (kWh)"}, inplace=True)
     daily_imports = temp_df
