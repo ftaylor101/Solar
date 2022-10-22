@@ -1,4 +1,3 @@
-import numpy as np
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -88,30 +87,17 @@ def data_analysis(export_df: pd.DataFrame, import_df: pd.DataFrame, generation_d
     # find the month and day for proper order of the data
     stacked_df["Date"] = pd.to_datetime(stacked_df[["Year", "Month", "Day"]])
 
-    row_chart_checkbox = st.checkbox("Rotate bar chart by 90 deg")
-    if row_chart_checkbox:
-        st.altair_chart(alt.Chart(stacked_df, title="Daily energy comparison").mark_bar().encode(
-            x=alt.X('Type:N', title="Energy usage type"),
-            y='Energy (kWh):Q',
-            color=alt.Color('Type:N'),
-            row='Date:T',
-            tooltip=[alt.Tooltip('Energy (kWh):Q'),
-                     alt.Tooltip('Type:N', title="Usage type")]
-        ))
-    else:
-        st.altair_chart(alt.Chart(stacked_df, title="Daily energy comparison").mark_bar().encode(
-            x=alt.X('Type:N', title="Energy usage type"),
-            y='Energy (kWh):Q',
-            color=alt.Color('Type:N'),
-            column='Date:T',
-            tooltip=[alt.Tooltip('Energy (kWh):Q'),
-                     alt.Tooltip('Type:N', title="Usage type")]
-        ))
-
     # stacked plot with text
-    bar_chart = alt.Chart(stacked_df, title="Daily energy comparison", width=1000, height=1000).mark_bar(size=20).encode(
+    bar_chart = alt.Chart(
+        stacked_df, title="Daily energy comparison", width=1000, height=1000).mark_bar(size=20).encode(
         x=alt.X('sum(Energy (kWh)):Q', stack="zero", title="Energy (kWh)"),
-        y=alt.Y('Date:T', sort="descending", title=f"Date from {stacked_df['Date'].min().strftime('%d/%m/%Y')} to {stacked_df['Date'].max().strftime('%d/%m/%Y')}"),
+        y=alt.Y(
+            'Date:T',
+            sort="descending",
+            title=f"Date from "
+                  f"{stacked_df['Date'].min().strftime('%d/%m/%Y')} to "
+                  f"{stacked_df['Date'].max().strftime('%d/%m/%Y')}"
+        ),
         color=alt.Color('Type:N', title="Usage type")
     )
 
@@ -132,12 +118,26 @@ def data_analysis(export_df: pd.DataFrame, import_df: pd.DataFrame, generation_d
     if import_checkbox:
         st.write("Import data", import_df)
 
+    generate_checkbox = st.checkbox("Show generated power data")
+    if generate_checkbox:
+        st.dataframe(generation_df)
 
-# File upload and entry point to the app
-files = st.file_uploader("Files upload", type=["csv"], accept_multiple_files=True)
-if not files:
-    st.error("No files have been added")
-elif len(files) < 3:
+
+# External file upload/example data usage and entry point to the app
+example_data = st.checkbox("Use example data")
+external_files = st.file_uploader("Files upload", type=["csv"], accept_multiple_files=True)
+
+if example_data:
+    export_data = load_import_export_data("../example_data/example export.csv")
+    import_data = load_import_export_data("../example_data/example import.csv")
+    generation_data = load_generation_data("../example_data/example days generation.csv")
+    # run analysis with example data
+    data_analysis(export_df=export_data, import_df=import_data, generation_df=generation_data)
+
+elif not external_files:
+    st.error("No files have been added or example data has not been selected")
+
+elif len(external_files) < 3:
     st.error("3 files are needed to calculate import/export rates and consumption. "
              "One containing **import** in the title, one containing **export** in the title and "
              "one containing **generation** in the title.")
@@ -145,7 +145,7 @@ else:
     export_data = None
     import_data = None
     generation_data = None
-    for data_file in files:
+    for data_file in external_files:
         if "export" in data_file.name.lower():
             export_data = load_import_export_data(data_file)
         elif "import" in data_file.name.lower():
@@ -154,8 +154,6 @@ else:
             generation_data = load_generation_data(data_file)
 
     if export_data is not None and import_data is not None and generation_data is not None:
-        data_analysis(export_data, import_data, generation_data)
+        data_analysis(export_df=export_data, import_df=import_data, generation_df=generation_data)
     else:
         st.write("No file provided")
-
-
