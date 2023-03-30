@@ -136,9 +136,9 @@ example_data = st.checkbox("Use example data")
 external_files = st.file_uploader("Files upload", type=["csv"], accept_multiple_files=True)
 
 if example_data:
-    export_data = load_import_export_data("../example_data/example export.csv")
-    import_data = load_import_export_data("../example_data/example import.csv")
-    generation_data = load_generation_data("../example_data/example days generation.csv")
+    export_data = load_import_export_data("example_data/example export.csv")
+    import_data = load_import_export_data("example_data/example import.csv")
+    generation_data = load_generation_data("example_data/example days generation.csv")
     # run analysis with example data
     data_analysis(export_df=export_data, import_df=import_data, generation_df=generation_data)
 
